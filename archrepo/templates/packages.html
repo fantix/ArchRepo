@@ -1,0 +1,184 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title></title>
+    <!--<link rel="stylesheet" href="https://www.archlinuxcn.org/wp-content/themes/askin2010/style.css" type="text/css" />-->
+    <link rel="stylesheet" type="text/css" href="http://www.archlinux.org/static/archweb.css" media="screen, projection" />
+</head>
+<body>
+<div id="archnavbar" class="anb-home">
+    <div id="archnavbarlogo"><h1><a href="/" title="Arch Linux 中文社区">Arch
+        Linux</a></h1></div>
+    <div id="archnavbarmenu">
+        <ul id="archnavbarlist">
+            <li id="anb-home"><a href="/">Home</a></li>
+            <li id="anb-packages" class="selected"><a href="/">Packages</a></li>
+            <li id="anb-forums"><a href="https://bbs.archlinuxcn.org"
+                                   title="China Community forums">Forums</a>
+            </li>
+            <li id="anb-wiki"><a
+                    href="https://wiki.archlinux.org/index.php/Main_Page_(%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)"
+                    title="Offical Documentation">Wiki</a></li>
+            <li id="anb-aur"><a href="https://aur.archlinux.org/"
+                                title="Arch Linux User Repository">AUR</a></li>
+            <li id="anb-download"><a href="https://archlinux.org/download/"
+                                     title="Get Arch Linux">Download</a></li>
+        </ul>
+    </div>
+</div>
+
+<div id="content">
+    <div id="archdev-navbar"></div>
+
+    <div id="pkglist-search" class="box filter-criteria">
+
+        <h2>{% trans %}Package Database{% endtrans %}</h2>
+
+        <h3>{% trans %}Package Search{% endtrans %}</h3>
+
+        <form id="pkg-search" method="get" action="/query">
+            <p><input type="hidden" name="sort" id="id_sort"/></p>
+
+            <fieldset>
+                <legend>{% trans %}Enter search criteria{% endtrans %}</legend>
+                <div>
+                    <label for="id_arch"
+                           title="{% trans %}Limit results a specific CPU architecture{% endtrans %}">{% trans %}Arch{% endtrans %}</label><select multiple="multiple" name="arch"
+                                            id="id_arch">
+                    <option value="any">any</option>
+                    <option value="i686">i686</option>
+                    <option value="x86_64">x86_64</option>
+                </select></div>
+                <div>
+                    <label for="id_q" title="{% trans %}Enter keywords as desired{% endtrans %}">
+                        {% trans %}Keywords{% endtrans %}</label><input id="id_q" type="text" name="q"
+                                               size="30"/></div>
+                <div>
+                    <label for="id_maintainer"
+                           title="{% trans %}Limit results to a specific maintainer{% endtrans %}">
+                        {% trans %}Maintainer{% endtrans %}</label><select name="maintainer"
+                                                  id="id_maintainer">
+                    <option value="" selected="selected">All</option>
+                    <option value="orphan">Orphan</option>
+                    <option value="aaron">Aaron Griffin</option>
+                    <option value="arodseth">Alexander Rødseth</option>
+                    <option value="allan">Allan McRae</option>
+                    <option value="andrea">Andrea Scarpino</option>
+                    <option value="andyrtr">Andreas Radke</option>
+                    <option value="aginiewicz">Andrzej Giniewicz</option>
+                    <option value="bgyorgy">Balló György</option>
+                    <option value="bpiotrowski">Bartłomiej Piotrowski</option>
+                    <option value="cbrannon">Chris Brannon</option>
+                    <option value="cbehan">Connor Behan</option>
+                    <option value="dan">Dan McGee</option>
+                    <option value="daniel">Daniel Isenmann</option>
+                    <option value="dwallace">Daniel Wallace</option>
+                    <option value="dreisner">Dave Reisner</option>
+                    <option value="eric">Eric Bélanger</option>
+                    <option value="foutrelis">Evangelos Foutras</option>
+                    <option value="bluewind">Florian Pritz</option>
+                    <option value="bisson">Gaetan Bisson</option>
+                    <option value="daenyth">Gavin Bisesi</option>
+                    <option value="giovanni">Giovanni Scafora</option>
+                    <option value="guillaume">Guillaume Alaux</option>
+                    <option value="idevolder">Ike Devolder</option>
+                    <option value="ibiru">Ionuț Mircea Bîru</option>
+                    <option value="schuay">Jakob Gruber</option>
+                    <option value="jakobw">Jakob Wadsager</option>
+                    <option value="jgc">Jan de Groot</option>
+                    <option value="heftig">Jan Steffens</option>
+                    <option value="jlichtblau">Jaroslav Lichtblau</option>
+                    <option value="jelle">Jelle van der Waa</option>
+                    <option value="jconder">Jonathan Conder</option>
+                    <option value="juergen">Jürgen Hötzel</option>
+                    <option value="juster">Justin Davis</option>
+                    <option value="kchen">Kaiting Chen</option>
+                    <option value="kkeen">Kyle Keen</option>
+                    <option value="lcarlier">Laurent Carlier</option>
+                    <option value="lfleischer">Lukas Fleischer</option>
+                    <option value="stativ">Lukas Jirkovsky</option>
+                    <option value="mtorromeo">Massimiliano Torromeo</option>
+                    <option value="plewis">Peter Lewis</option>
+                    <option value="pierre">Pierre Schmitz</option>
+                    <option value="schiv">Ray Rashif</option>
+                    <option value="remy">Rémy Oudompheng</option>
+                    <option value="ronald">Ronald van Haren</option>
+                    <option value="seblu">Sébastien Luttringer</option>
+                    <option value="spupykin">Sergej Pupykin</option>
+                    <option value="speps">speps</option>
+                    <option value="stephane">Stéphane Gaudreault</option>
+                    <option value="svenstaro">Sven-Hendrik Haase</option>
+                    <option value="thomas">Thomas Bächler</option>
+                    <option value="td123">Thomas Dziedzic</option>
+                    <option value="ttopper">Thorsten Töpper</option>
+                    <option value="tredaelli">Timothy Redaelli</option>
+                    <option value="tpowa">Tobias Powalowski</option>
+                    <option value="tomegun">Tom Gundersen</option>
+                    <option value="vesa">Vesa Kaihlavirta</option>
+                    <option value="xyne">Xyne</option>
+                    <option value="romashka">Роман Кирилич</option>
+                </select></div>
+                <div>
+                    <label for="id_last_update"
+                           title="{% trans %}Limit results to a date after the date entered{% endtrans %}">
+                        {% trans %}Last Updated After{% endtrans %}</label><input id="id_last_update"
+                                                         type="text"
+                                                         class="vDateField"
+                                                         name="last_update"
+                                                         size="10"/></div>
+                <div>
+                    <label for="id_flagged"
+                           title="{% trans %}Limit results based on out-of-date status{% endtrans %}">
+                        {% trans %}Flagged{% endtrans %}</label><select name="flagged" id="id_flagged">
+                    <option value="" selected="selected">All</option>
+                    <option value="Flagged">Flagged</option>
+                    <option value="Not Flagged">Not Flagged</option>
+                </select></div>
+                <div>
+                    <label for="id_limit"
+                           title="{% trans %}Select the number of results to display per page{% endtrans %}">
+                        {% trans %}Per Page{% endtrans %}</label><select name="limit" id="id_limit">
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="250">250</option>
+                    <option value="all">All</option>
+                </select></div>
+                <div><label>&nbsp;</label><input
+                        title="{% trans %}Search for packages using this criteria{% endtrans %}"
+                        type="submit" value="{% trans %}Search{% endtrans %}"/></div>
+            </fieldset>
+        </form>
+
+    </div>
+    <!-- #pkglist-search -->
+
+
+    Hello,
+    {% if userinfo %}
+    {{ userinfo.username }}
+    {% else %}
+    Guest
+    {% endif %}
+    <table>
+        <tr>
+            <th>{% trans %}Arch{% endtrans %}</th>
+            <th>{% trans %}Name{% endtrans %}</th>
+            <th>{% trans %}Version{% endtrans %}</th>
+            <th>{% trans %}Description{% endtrans %}</th>
+            <th>{% trans %}Last Updated{% endtrans %}</th>
+        </tr>
+        {% for p in packages %}
+        <tr>
+            <td>{{ p.arch }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.version }}</td>
+            <td>{{ p.description }}</td>
+            <td>{{ p.last_update }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+</body>
+</html>
