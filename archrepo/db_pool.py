@@ -166,7 +166,7 @@ class PostgresConnectionPool(DatabaseConnectionPool):
 
 def buildPool():
     args = []
-    kwargs = {'maxsize': config.xgetint('database', 'pool-maxsize', default=3)}
+    kwargs = {'maxsize': config.xgetint('database', 'pool-maxsize', default=25)}
     dsn = config.xget('database', 'dsn')
     if dsn:
         args.append(dsn)

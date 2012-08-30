@@ -1,6 +1,7 @@
 import gevent
 import logging
 import os
+import pwd
 import sys
 import time
 import ujson
@@ -56,7 +57,8 @@ class Processor(ProcessEvent):
                  os.path.join(self._repo_dir, arch, self._db_name), name))
 
     def _removeLatest(self, cur, name, arch):
-        logging.info('Removing %s(%s) from repo, trying to add a lower version')
+        logging.info('Removing %s(%s) from repo, trying to add a lower version',
+                     name, arch)
         cur.execute(
             'SELECT id, version FROM packages '
              'WHERE name=%s AND arch=%s AND enabled', (name, arch))
@@ -129,6 +131,9 @@ class Processor(ProcessEvent):
         name = info[u'pkgname']
         version = info[u'pkgver']
         arch = info[u'arch']
+        packager = info.get(u'packager')
+
+        uploader = pwd.getpwuid(os.stat(pathname).st_uid)[0]
 
         if self._auto_rename and not partial:
             dest_dir = os.path.join(self._repo_dir, arch)
@@ -142,6 +147,35 @@ class Processor(ProcessEvent):
                 pathname = dest_path
 
         with self._same_pkg_locks[(name, arch)], self._pool.cursor() as cur:
+            owner = None
+            if packager != 'Unknown Packager':
+                parts = packager.split('<', 2)
+                sql = ('SELECT id FROM users '
+                        'WHERE username=%(name)s OR realname=%(name)s')
+                values = {'name': parts[0]}
+                if len(parts) == 2:
+                    sql = ' AND '.join((sql, 'email=%(email)s'))
+                    values['email'] = parts[1]
+                cur.execute(sql, values)
+                result = cur.fetchone()
+                if not result:
+                    cur.execute('SELECT user_id FROM user_aliases '
+                                 'WHERE alias=%s', (packager,))
+                    result = cur.fetchone()
+                if result:
+                    owner = result[0]
+            if not owner:
+                cur.execute('SELECT id FROM users '
+                             'WHERE username=%(name)s OR realname=%(name)s',
+                        {'name': uploader})
+                result = cur.fetchone()
+                if not result:
+                    cur.execute('SELECT user_id FROM user_aliases '
+                                 'WHERE alias=%s', (uploader,))
+                    result = cur.fetchone()
+                if result:
+                    owner = result[0]
+
             cur.execute(
                 'SELECT id, latest, enabled FROM packages '
                  'WHERE name=%s AND arch=%s AND version=%s',
@@ -149,14 +183,13 @@ class Processor(ProcessEvent):
             result = cur.fetchone()
             fields = (
                 'description', 'url', 'pkg_group', 'license', 'packager',
-                'base_name', 'build_date', 'size', 'depends', 'opt_depends',
-                'enabled', 'file_path')
+                'base_name', 'build_date', 'size', 'depends', 'uploader',
+                'owner', 'opt_depends', 'enabled', 'file_path')
             values = (
                 info.get(u'pkgdesc'), info.get(u'url'), info.get(u'group'),
-                info.get(u'license'), info.get(u'packager'),
-                info.get(u'pkgbase', name),
+                info.get(u'license'), packager, info.get(u'pkgbase', name),
                 int(info.get(u'builddate', time.time())), info.get(u'size'),
-                to_list(info.get(u'depend', [])),
+                to_list(info.get(u'depend', [])), uploader, owner,
                 to_list(info.get(u'optdepend', [])), not partial, pathname)
             if not result:
                 logging.info('Adding new file %s(%s)', name, arch)

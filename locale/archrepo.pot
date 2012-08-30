@@ -1,17 +1,17 @@
-# Chinese (China) translations for PROJECT.
+# Translations template for PROJECT.
 # Copyright (C) 2012 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2012.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2012-08-29 10:24+0800\n"
-"PO-Revision-Date: 2012-08-29 10:24+0800\n"
-"Last-Translator: Fantix King <fantix.king@gmail.com>\n"
-"Language-Team: zh_CN <LL@li.org>\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,142 +19,143 @@ msgstr ""
 
 #: archrepo/web.py:226 archrepo/templates/packages.html:104
 msgid "All"
-msgstr "不限制"
+msgstr ""
 
 #: archrepo/web.py:226
 msgid "Orphan"
-msgstr "被遗弃的"
+msgstr ""
 
 #: archrepo/templates/packages.html:38
 #, python-format
 msgid "Hello, %(name)s!"
-msgstr "你好，%(name)s！"
+msgstr ""
 
 #: archrepo/templates/packages.html:39
 msgid "Logout"
-msgstr "注销"
+msgstr ""
 
 #: archrepo/templates/packages.html:41
 msgid "Hello, please login!"
-msgstr "你好，请登录！"
+msgstr ""
 
 #: archrepo/templates/packages.html:42
 msgid "Login"
-msgstr "登录"
+msgstr ""
 
 #: archrepo/templates/packages.html:48
 msgid "Package Database"
-msgstr "软件包数据库"
+msgstr ""
 
 #: archrepo/templates/packages.html:50
 msgid "Package Search"
-msgstr "查找软件包"
+msgstr ""
 
 #: archrepo/templates/packages.html:56
 msgid "Enter search criteria"
-msgstr "输入查询条件"
+msgstr ""
 
 #: archrepo/templates/packages.html:59
 msgid "Limit results a specific CPU architecture"
-msgstr "按 CPU 架构过滤"
+msgstr ""
 
 #: archrepo/templates/packages.html:59 archrepo/templates/packages.html:166
 msgid "Arch"
-msgstr "架构"
+msgstr ""
 
 #: archrepo/templates/packages.html:69
 msgid "Enter keywords as desired"
-msgstr "请输入关键字"
+msgstr ""
 
 #: archrepo/templates/packages.html:70
 msgid "Keywords"
-msgstr "关键字"
+msgstr ""
 
 #: archrepo/templates/packages.html:78
 msgid "Limit results to a specific maintainer"
-msgstr "按维护者过滤"
+msgstr ""
 
 #: archrepo/templates/packages.html:79 archrepo/templates/packages.html:172
 msgid "Maintainer"
-msgstr "维护者"
+msgstr ""
 
 #: archrepo/templates/packages.html:90
 msgid "Limit results to a date after the date entered"
-msgstr "按上次更新时间过滤"
+msgstr ""
 
 #: archrepo/templates/packages.html:91
 msgid "Last Updated After"
-msgstr "在此之后有更新"
+msgstr ""
 
 #: archrepo/templates/packages.html:100
 msgid "Limit results based on out-of-date status"
-msgstr "按过期状态过滤"
+msgstr ""
 
 #: archrepo/templates/packages.html:101 archrepo/templates/packages.html:106
 msgid "Flagged"
-msgstr "过期"
+msgstr ""
 
 #: archrepo/templates/packages.html:108
 msgid "Not Flagged"
-msgstr "未过期"
+msgstr ""
 
 #: archrepo/templates/packages.html:112
 msgid "Select the number of results to display per page"
-msgstr "选择每页显示的结果数量"
+msgstr ""
 
 #: archrepo/templates/packages.html:113
 msgid "Per Page"
-msgstr "每页"
+msgstr ""
 
 #: archrepo/templates/packages.html:119
 msgid "all"
-msgstr "全部"
+msgstr ""
 
 #: archrepo/templates/packages.html:122
 msgid "Search for packages using this criteria"
-msgstr "按以上条件搜索软件包"
+msgstr ""
 
 #: archrepo/templates/packages.html:123
 msgid "Search"
-msgstr "搜索"
+msgstr ""
 
 #: archrepo/templates/packages.html:135
 #, python-format
 msgid "%(count)s packages found. Page %(page)s of %(all_pages)s."
-msgstr "共找到 %(count)s 个软件包，共 %(all_pages)s 页，当前第 %(page)s 页。"
+msgstr ""
 
 #: archrepo/templates/packages.html:141
 msgid "Go to previous page"
-msgstr "跳转到上一页"
+msgstr ""
 
 #: archrepo/templates/packages.html:142 archrepo/templates/packages.html:144
 msgid "&lt; Prev"
-msgstr "&lt; 上一页"
+msgstr ""
 
 #: archrepo/templates/packages.html:150
 msgid "Go to next page"
-msgstr "跳转到下一页"
+msgstr ""
 
 #: archrepo/templates/packages.html:150 archrepo/templates/packages.html:152
 msgid "Next &gt;"
-msgstr "下一页 &gt;"
+msgstr ""
 
 #: archrepo/templates/packages.html:168
 msgid "Name"
-msgstr "名称"
+msgstr ""
 
 #: archrepo/templates/packages.html:170
 msgid "Version"
-msgstr "版本"
+msgstr ""
 
 #: archrepo/templates/packages.html:171
 msgid "Description"
-msgstr "描述"
+msgstr ""
 
 #: archrepo/templates/packages.html:174
 msgid "Last Updated"
-msgstr "上次更新"
+msgstr ""
 
 #: archrepo/templates/packages.html:177
 msgid "Flag Date"
-msgstr "过期日期"
+msgstr ""
+

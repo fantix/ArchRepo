@@ -15,6 +15,7 @@ CREATE TABLE packages (
     pkg_group   text,
     license     text,
     packager    text,
+    uploader    text,
     base_name   text,
     file_path   text NOT NULL,
     build_date  integer,
@@ -24,7 +25,9 @@ CREATE TABLE packages (
     enabled     boolean NOT NULL DEFAULT true,
     latest      boolean NOT NULL DEFAULT false,
     last_update timestamp without time zone NOT NULL DEFAULT now(),
-    searchable  tsvector NOT NULL DEFAULT to_tsvector('english', '')
+    flag_date   timestamp without time zone,
+    searchable  tsvector NOT NULL DEFAULT to_tsvector('english', ''),
+    owner       bigint
 );
 CREATE INDEX package_by_name ON packages (name);
 CREATE INDEX package_by_path ON packages (file_path);
@@ -46,7 +49,15 @@ CREATE TABLE users (
     title       text,
     realname    text
 );
-'''
+''',
+    'user_aliases': '''\
+CREATE TABLE user_aliases (
+    user_id     bigint NOT NULL,
+    alias       text NOT NULL
+);
+CREATE INDEX alias_by_user ON user_aliases (user_id);
+CREATE INDEX user_by_alias ON user_aliases (alias);
+''',
 }
 
 
