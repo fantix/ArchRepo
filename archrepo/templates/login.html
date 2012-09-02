@@ -14,7 +14,7 @@
         var li = document.getElementById('login-iframe');
         li.onload = function() {
             $.ajax({
-                url       : '/ajax_login',
+                url       : '{{ base_url }}/ajax_login',
                 statusCode: {
                     500: function() {
                     },

@@ -1,4 +1,5 @@
 import os
+import pwd
 
 from archrepo import config
 
@@ -66,7 +67,8 @@ def initSchema(pool):
         cur.execute(
             'SELECT tablename FROM pg_tables '
              'WHERE tableowner=%s',
-            (config.xget('database', 'user', default=os.getlogin()),))
+            (config.xget('database', 'user',
+                default=pwd.getpwuid(os.getuid())[0]),))
         result = set([x[0] for x in cur.fetchall()])
         for key in schema:
             if key not in result:
