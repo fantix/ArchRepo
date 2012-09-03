@@ -182,7 +182,8 @@
             {% for p in packages %}
                 <tr class="{{ loop.cycle('odd', 'even') }}">
                     <td>{{ p.arch }}</td>
-                    <td><a href="{{ base_url }}/detail?id={{ p.id }}">{{ p.name }}</a></td>
+                    <!--<td><a href="{{ base_url }}/detail?id={{ p.id }}">{{ p.name }}</a></td>-->
+                    <td>{{ p.name }}</td>
                     <td>{{ p.version }}</td>
                     <td>{{ p.description }}</td>
                     <td>{{ p.maintainer }}</td>

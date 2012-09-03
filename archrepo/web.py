@@ -296,9 +296,9 @@ class ArchRepoApplication(object):
         if redirect_url:
             raise cherrypy.HTTPRedirect(redirect_url)
 
-    @cherrypy.expose
-    def detail(self, id):
-        pass
+    #@cherrypy.expose
+    #def detail(self, id):
+    #    pass
 
 
 class ArchRepoWebServer(WSGIServer):
