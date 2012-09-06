@@ -38,7 +38,8 @@ setup(
     description='Package management for archlinuxcn.org',
     long_description=open('README.md').read(),
     install_requires=[
-        "gevent==1.0b3", "pyinotify", "ujson", "cherrypy", "jinja2", "psycopg2", "babel", "pyliblzma"
+        "gevent==1.0b3", "pyinotify", "ujson", "cherrypy", "jinja2", "psycopg2",
+        "babel", "pyliblzma", "gevent_zeromq"
         ],
     cmdclass = {
         'build': my_build,

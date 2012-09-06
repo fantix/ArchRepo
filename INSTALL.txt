@@ -13,6 +13,7 @@ System Dependencies
  * bsdtar (required by Pacman repo-add)
  * repo-add, repo-remove (offered by Pacman)
  * liblzma-dev (required by pyliblzma)
+ * libzmq-dev (required by pyzmq)
  * Python >= 2.6, < 3
    * with header files (python-dev, required for compiling Python libraries)
    * pip is recommended for installing Python dependencies (python-pip)

@@ -10,9 +10,11 @@ from distutils.version import LooseVersion
 from gevent import subprocess
 from gevent.lock import RLock
 from gevent.subprocess import CalledProcessError
+from gevent_zeromq import zmq
 from pyinotify import Event, ProcessEvent
 
 from archrepo import config
+from archrepo.utils import getZmqContext
 
 
 def to_list(obj):
@@ -309,6 +311,11 @@ class Processor(ProcessEvent):
 
     def kill(self):
         self._greenlet.kill()
+
+    def _handel(self):
+        ctx = getZmqContext()
+        s = ctx.socket(zmq.PULL)
+        s.recv_multipart()
 
     def _serve(self):
         np = subprocess.Popen(
