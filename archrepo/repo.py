@@ -8,6 +8,7 @@ import ujson
 from collections import defaultdict
 from distutils.version import LooseVersion
 from gevent import subprocess
+from gevent.event import AsyncResult
 from gevent.lock import RLock
 from gevent.subprocess import CalledProcessError
 from gevent_zeromq import zmq
@@ -26,6 +27,7 @@ def to_list(obj):
 
 class Processor(ProcessEvent):
     def my_init(self, **kwargs):
+        self._started_event = AsyncResult()
         self._repo_lock = RLock()
         self._same_pkg_locks = defaultdict(RLock)
         self._ignored_move_events = set()
@@ -312,34 +314,57 @@ class Processor(ProcessEvent):
     def kill(self):
         self._greenlet.kill()
 
-    def _handel(self):
-        ctx = getZmqContext()
-        s = ctx.socket(zmq.PULL)
-        s.recv_multipart()
+    def _handle_wrapper(self, func, *args):
+        try:
+            func(*args)
+        except Exception:
+            logging.error('Error handling ZMQ message', exc_info=True)
+
+    def handle_inotify(self, mask, cookie, _dir, pathname):
+        if cookie == '':
+            cookie = None
+        else:
+            cookie = int(cookie)
+        self(Event({'mask': int(mask),
+                   'pathname': pathname,
+                   'dir': _dir == 'True',
+                   'cookie': cookie}))
+
+    def handle_execute(self, method, *args):
+        func = getattr(self, method, None)
+        if func:
+            func(*args)
 
     def _serve(self):
-        np = subprocess.Popen(
-            (sys.executable,
-             os.path.join(sys.prefix, 'bin', 'archrepo_inotify.py'),
-             self._repo_dir), stdout=subprocess.PIPE)
+        ctx = getZmqContext()
+        self.socket = ctx.socket(zmq.PULL)
         try:
-            while True:
-                line = np.stdout.readline()
-                if not line:
-                    break
-                try:
-                    mask, cookie, _dir, pathname = line.strip().split(' ', 4)
-                    if cookie == '':
-                        cookie = None
-                    else:
-                        cookie = int(cookie)
-                    e = Event({'mask': int(mask),
-                               'pathname': pathname,
-                               'dir': _dir == 'True',
-                               'cookie': cookie})
-                    gevent.spawn(self, e)
-                except Exception:
-                    logging.error('Cannot handle inotify output: %s', line,
-                                  exc_info=True)
+            try:
+                self.socket.bind(config.get('repository', 'management-socket'))
+            except zmq.ZMQError:
+                self._started_event.set(False)
+            else:
+                self._started_event.set(True)
+                while True:
+                    parts = self.socket.recv_multipart()
+                    handler = getattr(self, 'handle_' + parts[0], None)
+                    if handler:
+                        gevent.spawn(self._handle_wrapper, handler, *parts[1:])
         finally:
-            np.terminate()
+            self.socket.close()
+
+    @property
+    def serving(self):
+        return self._started_event.get()
+
+
+class FakeProcessor(object):
+    def __init__(self):
+        ctx = getZmqContext()
+        self.socket = ctx.socket(zmq.PUSH)
+        self.socket.connect(config.get('repository', 'management-socket'))
+
+    def __getattr__(self, item):
+        def delegate(*args):
+            self.socket.send_multipart(('execute', item) + args)
+        return delegate

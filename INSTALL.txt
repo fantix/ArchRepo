@@ -45,6 +45,7 @@ distribution at your own risk.
    - jinja2     (python-jinja2)
    - psycopg2   (python-psycopg2)
    - pyliblzma  (python-lzma)
+   - gevent_zeromq
 
 
 Install
@@ -72,11 +73,35 @@ ArchRepo package upgrade. The order the server will find a value is:
 See archrepo.ini for more configuration description.
 
 
-Run Server
-==========
+Run Web Server
+==============
 
 Within virtualenv if any, run directly:
 
     $ archrepo_serve.py -v0
 
 If you need more logs, try -v1 (info) and -v2 (debug).
+
+
+Run inotify monitor
+===================
+
+Within virtualenv if any, run directly:
+
+    $ archrepo_inotify.py
+
+
+Manually synchronize
+====================
+
+Within virtualenv if any, with or without a running web server, run directly:
+
+    $ archrepo_sync.py
+
+It will automatically add files not in DB into the repository, and remove
+packages whose files are removed from disk. With the inotify monitor running,
+you usually don't have to run this. But it is normally required for the first
+setup, or the inotify monitor stopped working for a while.
+
+It will not check updated files with the same file name. If you need this, just
+touch the file while the inotify monitor is running.

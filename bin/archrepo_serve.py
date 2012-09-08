@@ -31,10 +31,13 @@ if __name__ == '__main__':
     pool = buildPool()
     p = Processor(pool=pool)
     p.serve()
-    web_server = ArchRepoWebServer(pool)
-    try:
-        web_server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        p.kill()
+    if p.serving:
+        web_server = ArchRepoWebServer(pool)
+        try:
+            web_server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            p.kill()
+    else:
+        logging.critical('Another ArchRepo processor is working, try again later')

@@ -23,13 +23,14 @@ for fn in glob.glob('locale/*/*/*.po'):
 
 setup(
     name='ArchRepo',
-    version='1.0a2',
+    version='1.0b1',
     author='Fantix King',
     author_email='fantix.king@gmail.com',
     packages=['archrepo'],
     scripts=['bin/archrepo_inotify.py',
              'bin/read_pkginfo.py',
              'bin/archrepo_serve.py',
+             'bin/archrepo_sync.py',
              ],
     package_data={'archrepo': ['templates/*']},
     data_files=list(data_files.iteritems()),

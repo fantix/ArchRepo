@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
+import gevent
 import os
 
 from archrepo import config
 from archrepo.db_pool import buildPool
 from archrepo.repo import Processor
+from archrepo.repo import FakeProcessor
 
 
 files = set()
@@ -21,10 +23,27 @@ with pool.cursor() as cur:
     for path, in cur.fetchall():
         known.add(path)
 
+local = True
 p = Processor(pool=pool)
+p.serve()
 
-for path in files.difference(known):
-    p._complete(path)
+if p.serving:
+    print 'Repo processor is up'
+else:
+    local = False
+    print 'Connecting to Arch Repo management socket...'
+    p = FakeProcessor()
 
-for path in known.difference(files):
-    p._delete(path)
+def sync():
+    for path in files.difference(known):
+        print 'Adding new file to repo', path
+        p._complete(path)
+
+    for path in known.difference(files):
+        print 'Deleting package from repo', path
+        p._delete(path)
+
+    if local:
+        p.kill()
+
+gevent.spawn(sync).join()
