@@ -1,28 +1,29 @@
 #!/usr/bin/env python
 
-from cStringIO import StringIO
-import sys
+from gevent_zeromq import zmq
 from pyinotify import WatchManager, Notifier, ProcessEvent
+
+from archrepo import config
+from archrepo.utils import getZmqContext
 
 
 class PrintEvents(ProcessEvent):
+    def __init__(self, pevent=None, **kargs):
+        super(PrintEvents, self).__init__(pevent, **kargs)
+        self._socket = getZmqContext().socket(zmq.PUSH)
+        self._socket.connect(config.get('repository', 'management-socket'))
+
     def process_default(self, event):
-        buf = StringIO()
-        buf.write(str(event.mask))
-        buf.write(' ')
-        if event.mask & (0x00000040 | 0x00000080):
-            buf.write(str(event.cookie))
-        buf.write(' ')
-        buf.write(str(event.dir))
-        buf.write(' ')
-        buf.write(event.pathname)
-        buf.write('\n')
-        sys.stdout.write(buf.getvalue())
-        sys.stdout.flush()
+        self._socket.send_multipart((
+            'inotify',
+            str(event.mask),
+            str(event.cookie) if event.mask & (0x00000040 | 0x00000080) else '',
+            str(event.dir),
+            event.pathname))
 
 
 if __name__ == '__main__':
-    path = sys.argv[1]
+    path = config.get('repository', 'path')
 
     # watch manager instance
     wm = WatchManager()
