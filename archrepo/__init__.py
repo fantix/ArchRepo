@@ -26,8 +26,10 @@ class _DefaultConfigParser(ConfigParser):
 
 config = _DefaultConfigParser()
 _files_read = config.read([
-    os.path.join(sys.prefix, 'etc', 'archrepo.ini'),
-    os.path.join(sys.prefix, 'etc', 'archrepo_local.ini'),
+    os.path.join(os.environ.get('ARCHREPO_PREFIX', sys.prefix), 'etc',
+                 'archrepo.ini'),
+    os.path.join(os.environ.get('ARCHREPO_PREFIX', sys.prefix), 'etc',
+                 'archrepo_local.ini'),
     os.path.expanduser('~/.archrepo.ini'),
     ])
 

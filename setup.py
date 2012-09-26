@@ -23,7 +23,7 @@ for fn in glob.glob('locale/*/*/*.po'):
 
 setup(
     name='ArchRepo',
-    version='1.0b1',
+    version='1.0b2',
     author='Fantix King',
     author_email='fantix.king@gmail.com',
     packages=['archrepo'],

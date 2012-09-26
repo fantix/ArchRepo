@@ -10,6 +10,7 @@ from distutils.version import LooseVersion
 from gevent import subprocess
 from gevent.event import AsyncResult
 from gevent.lock import RLock
+from gevent.lock import Semaphore
 from gevent.subprocess import CalledProcessError
 from gevent_zeromq import zmq
 from pyinotify import Event, ProcessEvent
@@ -45,8 +46,11 @@ class Processor(ProcessEvent):
                                         default='repo-remove')
         self._command_fuser = config.xget('repository', 'command-fuser',
                                           default='fuser')
-        self._command_pkginfo = os.path.join(sys.prefix, 'bin',
-                                             'read_pkginfo.py')
+        self._command_pkginfo = os.path.join(
+            os.environ.get('ARCHREPO_PREFIX', sys.prefix), 'bin',
+            'read_pkginfo.py')
+        self._semaphore = Semaphore(
+            config.xgetint('repository', 'concurrent-jobs', default=256))
 
     def _repoAdd(self, arch, pathname):
         with self._repo_lock:
@@ -260,7 +264,8 @@ class Processor(ProcessEvent):
     def _modify(self, pathname):
         pass
     #        info_p = subprocess.Popen((sys.executable,
-    #                                   os.path.join(sys.prefix, 'bin',
+    #                                   os.path.join(
+    #               os.environ.get('ARCHREPO_PREFIX', sys.prefix), 'bin',
     #                                                'read_pkginfo.py'),
     #                                   pathname), stdout=subprocess.PIPE)
     #        info = ujson.loads(info_p.communicate()[0])
@@ -316,7 +321,8 @@ class Processor(ProcessEvent):
 
     def _handle_wrapper(self, func, *args):
         try:
-            func(*args)
+            with self._semaphore:
+                func(*args)
         except Exception:
             logging.error('Error handling ZMQ message', exc_info=True)
 

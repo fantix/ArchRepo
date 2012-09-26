@@ -110,7 +110,9 @@ class ArchRepoApplication(object):
                                 extensions=['jinja2.ext.i18n'])
         try:
             self.trans = gettext.translation(
-                'archrepo', os.path.join(sys.prefix, 'share/locale'))
+                'archrepo', os.path.join(
+                    os.environ.get('ARCHREPO_PREFIX', sys.prefix),
+                    'share/locale'))
         except IOError:
             self.trans = gettext.NullTranslations()
         #noinspection PyUnresolvedReferences
@@ -251,6 +253,8 @@ class ArchRepoApplication(object):
             all_pages=all_pages, limit=limit, all_limits=AVAILABLE_LIMITS,
             pager=pager, sorter=sorter, maintainer=maintainer, users=users,
             base_url=config.get('web', 'external-base-url').rstrip('/'),
+            title=config.get('web', 'title'),
+            favicon=config.get('web', 'favicon'),
             all_arch=('any', 'i686', 'x86_64'))
 
     @cherrypy.expose
@@ -282,7 +286,8 @@ class ArchRepoApplication(object):
         if not self.auth.getUserInfo():
             try:
                 self.auth.login()
-            except AuthError:
+            except AuthError, e:
+                logging.info('Login attempt failed: %s', e)
                 raise cherrypy.HTTPError()
 
     @cherrypy.expose
