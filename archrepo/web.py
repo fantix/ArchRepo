@@ -184,7 +184,7 @@ class ArchRepoApplication(object):
         if q is not None and q.strip():
             sql = ', '.join((sql, "to_tsquery(%(lang)s, %(q)s) query"))
             values['lang'] = 'english'
-            values['q'] = q
+            values['q'] = '&'.join(q.split())
             where_list.append('searchable @@ query')
             sort_list.append('ts_rank_cd(searchable, query)')
             desc = True
