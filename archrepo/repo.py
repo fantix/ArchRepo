@@ -1,3 +1,4 @@
+import abc
 import gevent
 import logging
 import os
@@ -24,6 +25,80 @@ def to_list(obj):
         return obj
     else:
         return [obj]
+
+
+class OwnerFinder(object):
+    __metaclass__ = abc.ABCMeta
+
+    def __call__(self, packager, uploader):
+        packager = packager.lower()
+        uploader = uploader.lower()
+        owner = None
+        if packager != 'Unknown Packager':
+            parts = packager.split('<', 2)
+            name = parts[0].strip()
+            email = None
+            if len(parts) == 2:
+                email = parts[1].rstrip('>').strip()
+            owner = self.fromUsers(name, email)
+            if not owner:
+                owner = self.fromAliases(name)
+        if not owner:
+            owner = self.fromUsers(uploader)
+            if not owner:
+                owner = self.fromAliases(uploader)
+        return owner
+
+    @abc.abstractmethod
+    def fromUsers(self, name, email=None):
+        pass
+
+    @abc.abstractmethod
+    def fromAliases(self, alias):
+        pass
+
+
+class OwnerFinderInAll(OwnerFinder):
+    def __init__(self, cursor):
+        self.cursor = cursor
+
+    def fromUsers(self, name, email=None):
+        sql = ('SELECT id FROM users '
+                'WHERE lower(username)=%(name)s OR lower(realname)=%(name)s')
+        values = {'name': name}
+        if email is not None:
+            sql = ' AND '.join((sql, 'lower(email)=%(email)s'))
+            values['email'] = email
+        self.cursor.execute(sql, values)
+        result = self.cursor.fetchone()
+        if result:
+            return result[0]
+
+    def fromAliases(self, alias):
+        self.cursor.execute('SELECT user_id FROM user_aliases '
+                             'WHERE lower(alias)=%s', (alias,))
+        result = self.cursor.fetchone()
+        if result:
+            return result[0]
+
+
+class OwnerFinderForMe(OwnerFinder):
+    def __init__(self, uid, username, realname, email, aliases):
+        self.uid = uid
+        self.username = username and username.lower()
+        self.realname = realname and realname.lower()
+        self.email = email and email.lower()
+        self.aliases = {x.lower() for x in aliases}
+
+    def fromUsers(self, name, email=None):
+        if name == self.username or name == self.realname:
+            return self.uid
+        if email is not None and email == self.email:
+            return self.uid
+
+    def fromAliases(self, alias):
+        if alias in self.aliases:
+            return self.uid
 
 
 class Processor(ProcessEvent):
@@ -155,34 +230,7 @@ class Processor(ProcessEvent):
                 pathname = dest_path
 
         with self._same_pkg_locks[(name, arch)], self._pool.cursor() as cur:
-            owner = None
-            if packager != 'Unknown Packager':
-                parts = packager.split('<', 2)
-                sql = ('SELECT id FROM users '
-                        'WHERE username=%(name)s OR realname=%(name)s')
-                values = {'name': parts[0]}
-                if len(parts) == 2:
-                    sql = ' AND '.join((sql, 'email=%(email)s'))
-                    values['email'] = parts[1]
-                cur.execute(sql, values)
-                result = cur.fetchone()
-                if not result:
-                    cur.execute('SELECT user_id FROM user_aliases '
-                                 'WHERE alias=%s', (packager,))
-                    result = cur.fetchone()
-                if result:
-                    owner = result[0]
-            if not owner:
-                cur.execute('SELECT id FROM users '
-                             'WHERE username=%(name)s OR realname=%(name)s',
-                        {'name': uploader})
-                result = cur.fetchone()
-                if not result:
-                    cur.execute('SELECT user_id FROM user_aliases '
-                                 'WHERE alias=%s', (uploader,))
-                    result = cur.fetchone()
-                if result:
-                    owner = result[0]
+            owner = OwnerFinderInAll(cur)(packager, uploader)
 
             cur.execute(
                 'SELECT id, latest, enabled FROM packages '
@@ -271,6 +319,27 @@ class Processor(ProcessEvent):
     #        info = ujson.loads(info_p.communicate()[0])
     #        full = int(info[u'size'])
     #        print os.stat(pathname).st_size * 100 / full, '%'
+
+    def _autoAdopt(self, uid):
+        with self._pool.cursor() as cur:
+            cur.execute('SELECT username, realname, email FROM users '
+                         'WHERE id=%s', (uid,))
+            result = cur.fetchone()
+            if not result:
+                return
+            username, realname, email = result
+            cur.execute('SELECT alias FROM user_aliases '
+                         'WHERE user_id=%s', (uid,))
+            result = cur.fetchall()
+            aliases = [x[0] for x in result]
+            finder = OwnerFinderForMe(uid, username, realname, email, aliases)
+            cur.execute('SELECT id, packager, uploader FROM packages '
+                         'WHERE owner IS NULL')
+            for pid, packager, uploader in cur.fetchall():
+                owner = finder(packager, uploader)
+                if owner is not None:
+                    cur.execute('UPDATE packages SET owner=%s WHERE id=%s',
+                                (owner, pid))
 
     def process_IN_MODIFY(self, event):
         if not event.dir:

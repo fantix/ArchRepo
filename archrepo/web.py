@@ -18,6 +18,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from archrepo import config
 from archrepo.query import CursorPool, SubCursorPool
+from archrepo.repo import FakeProcessor
 
 
 monkey.patch_socket()
@@ -36,6 +37,7 @@ class AuthError(Exception):
 class Auth(object):
     def __init__(self, pool):
         self.pool = pool
+        self.processor = FakeProcessor()
 
     def getUserInfo(self):
         #noinspection PyUnresolvedReferences
@@ -49,6 +51,7 @@ class Auth(object):
         if success:
             #noinspection PyUnresolvedReferences
             cherrypy.session['userinfo'] = value
+            self.processor._autoAdopt(str(value['id']))
         else:
             raise AuthError(value)
 
