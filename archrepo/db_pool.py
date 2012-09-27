@@ -10,6 +10,12 @@ from archrepo import config
 from archrepo.schema import initSchema
 
 
+#noinspection PyArgumentList
+extensions.register_type(extensions.UNICODE)
+#noinspection PyArgumentList
+extensions.register_type(extensions.UNICODEARRAY)
+
+
 def gevent_wait_callback(conn, timeout=None):
     """A wait callback useful to allow gevent to work with Psycopg."""
     while 1:
