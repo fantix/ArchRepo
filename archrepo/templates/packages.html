@@ -1,8 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head>
-    <title></title>
+<head profile="http://www.w3.org/2005/10/profile">
+    <link rel="icon"
+          type="image/png"
+          href="{{ favicon }}"/>
+    <title>{{ title }}</title>
     <!--<link rel="stylesheet" href="https://www.archlinuxcn.org/wp-content/themes/askin2010/style.css" type="text/css" />-->
     <link rel="stylesheet" type="text/css"
           href="http://www.archlinux.org/static/archweb.css"
@@ -12,12 +15,12 @@
 </head>
 <body>
 <div id="archnavbar" class="anb-packages">
-    <div id="archnavbarlogo"><h1><a href="/" title="Arch Linux 中文社区">Arch
+    <div id="archnavbarlogo"><h1><a href="{{ base_url }}/" title="Arch Linux 中文社区">Arch
         Linux</a></h1></div>
     <div id="archnavbarmenu">
         <ul id="archnavbarlist">
-            <li id="anb-home"><a href="/">Home</a></li>
-            <li id="anb-packages" class="selected"><a href="/">Packages</a></li>
+            <li id="anb-home"><a href="http://www.archlinuxcn.org">Home</a></li>
+            <li id="anb-packages" class="selected"><a href="{{ base_url }}/">Packages</a></li>
             <li id="anb-forums"><a href="https://bbs.archlinuxcn.org"
                                    title="China Community forums">Forums</a>
             </li>
@@ -36,10 +39,10 @@
     <div id="archdev-navbar">
         {% if userinfo %}
             {{ gettext('Hello, %(name)s!')|format(name=userinfo.username) }}
-            <a href="/logout">{{ gettext('Logout') }}</a>
+            <a href="{{ base_url }}/logout">{{ gettext('Logout') }}</a>
         {% else %}
             {{ gettext('Hello, please login!') }}
-            <a href="/login">{{ gettext('Login') }}</a>
+            <a href="{{ base_url }}/login">{{ gettext('Login') }}</a>
         {% endif %}
     </div>
 
@@ -49,7 +52,7 @@
 
         <h3>{{ gettext('Package Search') }}</h3>
 
-        <form id="pkg-search" method="get" action="/query">
+        <form id="pkg-search" method="get" action="{{ base_url }}/query">
             <p><input type="hidden" name="sort" id="id_sort"/></p>
 
             <fieldset>
@@ -137,7 +140,7 @@
             <div class="pkglist-nav">
     <span class="prev">
         {% if page > 1 %}
-            <a href="/query?{{ pager }}{{ page - 1 }}"
+            <a href="{{ base_url }}/query?{{ pager }}{{ page - 1 }}"
                title="{{ gettext('Go to previous page') }}
             ">{{ gettext('&lt; Prev') }}</a>
         {% else %}
@@ -146,7 +149,7 @@
     </span>
     <span class="next">
         {% if page < all_pages %}
-            <a href="/query?{{ pager }}{{ page + 1 }}"
+            <a href="{{ base_url }}/query?{{ pager }}{{ page + 1 }}"
                title="{{ gettext('Go to next page') }}">{{ gettext('Next &gt;') }}</a>
         {% else %}
             {{ gettext('Next &gt;') }}
@@ -163,18 +166,18 @@
         <table class="results">
             <thead>
             <tr>
-                <th><a href="/query?{{ sorter }}arch">{{ gettext('Arch') }}</a>
+                <th><a href="{{ base_url }}/query?{{ sorter }}arch">{{ gettext('Arch') }}</a>
                 </th>
-                <th><a href="/query?{{ sorter }}name">{{ gettext('Name') }}</a>
+                <th><a href="{{ base_url }}/query?{{ sorter }}name">{{ gettext('Name') }}</a>
                 </th>
                 <th>{{ gettext('Version') }}</th>
                 <th>{{ gettext('Description') }}</th>
                 <th>{{ gettext('Maintainer') }}</th>
                 <th>
-                    <a href="/query?{{ sorter }}last_update">{{ gettext('Last Updated') }}</a>
+                    <a href="{{ base_url }}/query?{{ sorter }}last_update">{{ gettext('Last Updated') }}</a>
                 </th>
                 <th>
-                    <a href="/query?{{ sorter }}flag_date">{{ gettext('Flag Date') }}</a>
+                    <a href="{{ base_url }}/query?{{ sorter }}flag_date">{{ gettext('Flag Date') }}</a>
                 </th>
             </tr>
             </thead>
@@ -182,6 +185,7 @@
             {% for p in packages %}
                 <tr class="{{ loop.cycle('odd', 'even') }}">
                     <td>{{ p.arch }}</td>
+                    <!--<td><a href="{{ base_url }}/detail?id={{ p.id }}">{{ p.name }}</a></td>-->
                     <td>{{ p.name }}</td>
                     <td>{{ p.version }}</td>
                     <td>{{ p.description }}</td>

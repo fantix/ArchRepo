@@ -110,11 +110,13 @@ class ArchRepoApplication(object):
                                 extensions=['jinja2.ext.i18n'])
         try:
             self.trans = gettext.translation(
-                'archrepo', os.path.join(sys.prefix, 'share/locale'))
-            #noinspection PyUnresolvedReferences
-            self._env.install_gettext_translations(self.trans)
+                'archrepo', os.path.join(
+                    os.environ.get('ARCHREPO_PREFIX', sys.prefix),
+                    'share/locale'))
         except IOError:
-            pass
+            self.trans = gettext.NullTranslations()
+        #noinspection PyUnresolvedReferences
+        self._env.install_gettext_translations(self.trans)
 
         if config.has_section('flux-sso'):
             self.auth = FluxAuth(pool)
@@ -250,6 +252,9 @@ class ArchRepoApplication(object):
             last_update=last_update, flagged=flagged, page=page, count=count,
             all_pages=all_pages, limit=limit, all_limits=AVAILABLE_LIMITS,
             pager=pager, sorter=sorter, maintainer=maintainer, users=users,
+            base_url=config.get('web', 'external-base-url').rstrip('/'),
+            title=config.get('web', 'title'),
+            favicon=config.get('web', 'favicon'),
             all_arch=('any', 'i686', 'x86_64'))
 
     @cherrypy.expose
@@ -261,12 +266,15 @@ class ArchRepoApplication(object):
     def login(self, redirect_url=None):
         if not redirect_url:
             redirect_url = cherrypy.request.headers.get('REFERER', None)
+        if not redirect_url:
+            redirect_url = config.get('web', 'external-base-url')
         if not self.auth.getUserInfo():
             try:
                 self.auth.login()
             except AuthError:
                 tmpl = self._env.get_template('login.html')
                 return tmpl.render(
+                    base_url=config.get('web', 'external-base-url').rstrip('/'),
                     flux_url=config.get('flux-sso', 'login-url'),
                     redirect_url=redirect_url)
             else:
@@ -278,24 +286,33 @@ class ArchRepoApplication(object):
         if not self.auth.getUserInfo():
             try:
                 self.auth.login()
-            except AuthError:
+            except AuthError, e:
+                logging.info('Login attempt failed: %s', e)
                 raise cherrypy.HTTPError()
 
     @cherrypy.expose
     def logout(self, redirect_url=None):
         if not redirect_url:
             redirect_url = cherrypy.request.headers.get('REFERER', None)
+        if not redirect_url:
+            redirect_url = config.get('web', 'external-base-url')
         if self.auth.getUserInfo():
             self.auth.logout()
         if redirect_url:
             raise cherrypy.HTTPRedirect(redirect_url)
+
+    #@cherrypy.expose
+    #def detail(self, id):
+    #    pass
 
 
 class ArchRepoWebServer(WSGIServer):
     def __init__(self, pool):
         host = config.xget('web', 'host', default='*')
         port = config.xgetint('web', 'port', default=8080)
-        super(ArchRepoWebServer, self).__init__('%s:%d' % (host, port))
+        super(ArchRepoWebServer, self).__init__('%s:%d' % (host, port), log=None)
         cherrypy.server.unsubscribe()
         self.application = cherrypy.tree.mount(
             ArchRepoApplication(pool), config={'/': {'tools.sessions.on': True}})
+        self.application.log.access_log.level = self.application.log.access_log.parent.level
+        self.application.log.error_log.level = self.application.log.error_log.parent.level

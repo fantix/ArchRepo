@@ -1,0 +1,107 @@
+Tested on Ubuntu 12.04. Names in () are usually Ubuntu packages.
+
+System Dependencies
+===================
+
+ * PostgreSQL >= 8.4, 9.1 preferred
+   * with header files (libpq-dev, required by psycopg2)
+   * Some tips creating user and database:
+
+    $ sudo -u postgres createuser -s `whoami`
+    $ createdb archrepo
+
+ * bsdtar (required by Pacman repo-add)
+ * repo-add, repo-remove (offered by Pacman)
+ * liblzma-dev (required by pyliblzma)
+ * libzmq-dev (required by pyzmq)
+ * Python >= 2.6, < 3
+   * with header files (python-dev, required for compiling Python libraries)
+   * pip is recommended for installing Python dependencies (python-pip)
+   * using virtualenv is recommended (python-virtualenv), you need to set it up:
+
+    $ virtualenv /home/arch/env --distribute --no-site-packages
+    $ source /home/arch/env/bin/activate
+    (env)$ python --version
+    (env)$ deactivate
+
+ * GCC, make (build-essential, required for compiling Python libraries)
+ * Kernel supporting inotify
+ * /bin/fuser (psmsic)
+
+
+Python Dependencies
+===================
+
+Note, if you are not using virtualenv, you probably need root access for the
+following "pip" commands, or using system packages delivered with your Linux
+distribution at your own risk.
+
+ * Gevent >= 1.0b3 (pip install http://gevent.googlecode.com/files/gevent-1.0b3.tar.gz)
+ * PyBabel (pip install babel)
+ * Others will be installed together automatically with ArchRepo through pip:
+   - pyinotify  (python-pyinotify)
+   - ujson
+   - cherrypy   (python-cherrypy)
+   - jinja2     (python-jinja2)
+   - psycopg2   (python-psycopg2)
+   - pyliblzma  (python-lzma)
+   - gevent_zeromq
+
+
+Install
+=======
+
+    pip install ArchRepo-VERSION.tar.gz
+
+
+Configure
+=========
+
+The base config can be found under $PREFIX/etc/archrepo.ini, where $PREFIX can
+be $VIRTUAL_ENV (e.g. /home/arch/env) or /usr/local/ according to your
+installation. It is not recommended to edit this file directly, instead copy it
+over to either:
+
+ * $PREFIX/etc/archrepo_local.ini, or
+ * ~/.archrepo.ini
+
+And edit your own copy, so that your local changes will not be flushed during an
+ArchRepo package upgrade. The order the server will find a value is:
+
+    $HOME/.archrepo.ini -> archrepo_local.ini -> archrepo.ini -> builtin default
+
+See archrepo.ini for more configuration description.
+
+
+Run Web Server
+==============
+
+Within virtualenv if any, run directly:
+
+    $ archrepo_serve.py -v0
+
+If you need more logs, try -v1 (info) and -v2 (debug).
+
+
+Run inotify monitor
+===================
+
+Within virtualenv if any, run directly:
+
+    $ archrepo_inotify.py
+
+
+Manually synchronize
+====================
+
+Within virtualenv if any, with or without a running web server, run directly:
+
+    $ archrepo_sync.py
+
+It will automatically add files not in DB into the repository, and remove
+packages whose files are removed from disk. With the inotify monitor running,
+you usually don't have to run this. But it is normally required for the first
+setup, or the inotify monitor stopped working for a while.
+
+It will not check updated files with the same file name. If you need this, just
+touch the file while the inotify monitor is running.
