@@ -32,7 +32,7 @@ setup(
              'bin/archrepo_serve.py',
              'bin/archrepo_sync.py',
              ],
-    package_data={'archrepo': ['templates/*']},
+    package_data={'archrepo': ['templates/*.html', 'templates/static/*']},
     data_files=list(data_files.iteritems()),
     url='http://www.archlinuxcn.org',
     license='LICENSE.txt',

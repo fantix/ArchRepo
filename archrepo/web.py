@@ -312,7 +312,11 @@ class ArchRepoWebServer(WSGIServer):
         port = config.xgetint('web', 'port', default=8080)
         super(ArchRepoWebServer, self).__init__('%s:%d' % (host, port), log=None)
         cherrypy.server.unsubscribe()
+        static_dir = resource_filename('archrepo', 'templates/static')
         self.application = cherrypy.tree.mount(
-            ArchRepoApplication(pool), config={'/': {'tools.sessions.on': True}})
+            ArchRepoApplication(pool), config={
+                '/': {'tools.sessions.on': True},
+                '/static': {'tools.staticdir.on': True,
+                            'tools.staticdir.dir': static_dir}})
         self.application.log.access_log.level = self.application.log.access_log.parent.level
         self.application.log.error_log.level = self.application.log.error_log.parent.level
