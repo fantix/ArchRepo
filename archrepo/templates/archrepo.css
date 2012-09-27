@@ -22,3 +22,7 @@
     display: block;
     font-weight: normal;
 }
+
+.results td {
+    white-space: pre-wrap;
+}
