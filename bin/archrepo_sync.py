@@ -21,7 +21,8 @@ pool = buildPool()
 with pool.cursor() as cur:
     cur.execute('SELECT file_path FROM packages')
     for path, in cur.fetchall():
-        known.add(path)
+        if path:
+            known.add(path.encode('utf-8'))
 
 local = True
 p = Processor(pool=pool)
