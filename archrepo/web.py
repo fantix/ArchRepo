@@ -165,11 +165,11 @@ class ArchRepoApplication(object):
             flagged = '0'
 
         if maintainer is not None and maintainer.isdigit():
-            where_list.append('owner=%(owner)s')
             if int(maintainer):
+                where_list.append('owner=%(owner)s')
                 values['owner'] = int(maintainer)
             else:
-                values['owner'] = None
+                where_list.append('owner IS NULL')
 
         if sort:
             for part in sort.lower().split(','):
