@@ -7,6 +7,7 @@ import sys
 import time
 import ujson
 from collections import defaultdict
+from datetime import datetime
 from distutils.version import LooseVersion
 from gevent import subprocess
 from gevent.event import AsyncResult
@@ -262,6 +263,7 @@ class Processor(ProcessEvent):
         packager = info.get(u'packager')
 
         uploader = pwd.getpwuid(os.stat(pathname).st_uid)[0]
+        mtime = datetime.utcfromtimestamp(os.path.getmtime(pathname))
 
         if self._auto_rename and not partial:
             dest_dir = os.path.join(self._repo_dir, arch)
@@ -285,13 +287,14 @@ class Processor(ProcessEvent):
             fields = (
                 'description', 'url', 'pkg_group', 'license', 'packager',
                 'base_name', 'build_date', 'size', 'depends', 'uploader',
-                'owner', 'opt_depends', 'enabled', 'file_path')
+                'owner', 'opt_depends', 'enabled', 'file_path', 'last_update')
             values = (
                 info.get(u'pkgdesc'), info.get(u'url'), info.get(u'group'),
                 info.get(u'license'), packager, info.get(u'pkgbase', name),
                 int(info.get(u'builddate', time.time())), info.get(u'size'),
                 to_list(info.get(u'depend', [])), uploader, owner,
-                to_list(info.get(u'optdepend', [])), not partial, pathname)
+                to_list(info.get(u'optdepend', [])), not partial, pathname,
+                mtime)
             if not result:
                 logging.info('Adding new file %s(%s)', name, arch)
                 cur.execute(
@@ -311,7 +314,7 @@ class Processor(ProcessEvent):
                     fields += ('latest',)
                     values += (False,)
                 cur.execute(
-                    'UPDATE packages SET %s, last_update=now() WHERE id=%%s' % (
+                    'UPDATE packages SET %s WHERE id=%%s' % (
                         ', '.join([x + '=%s' for x in fields]),),
                     values + (pid,))
                 if latest and partial:
