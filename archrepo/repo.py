@@ -12,12 +12,14 @@ from gevent import subprocess
 from gevent.event import AsyncResult
 from gevent.lock import RLock
 from gevent.lock import Semaphore
-from gevent.subprocess import CalledProcessError
 from gevent_zeromq import zmq
 from pyinotify import Event, ProcessEvent
 
 from archrepo import config
 from archrepo.utils import getZmqContext
+
+
+arches = ('i686', 'x86_64')
 
 
 def to_list(obj):
@@ -104,7 +106,7 @@ class OwnerFinderForMe(OwnerFinder):
 class Processor(ProcessEvent):
     def my_init(self, **kwargs):
         self._started_event = AsyncResult()
-        self._repo_lock = RLock()
+        self._repo_lock = defaultdict(RLock)
         self._same_pkg_locks = defaultdict(RLock)
         self._ignored_move_events = set()
         self._move_events = {}
@@ -127,17 +129,53 @@ class Processor(ProcessEvent):
         self._semaphore = Semaphore(
             config.xgetint('repository', 'concurrent-jobs', default=256))
 
-    def _repoAdd(self, arch, pathname):
-        with self._repo_lock:
+    def _repoAddInternal(self, arch, pathname):
+        with self._repo_lock[arch]:
             subprocess.check_call(
                 (self._command_add,
                  os.path.join(self._repo_dir, arch, self._db_name), pathname))
 
-    def _repoRemove(self, arch, name):
-        with self._repo_lock:
+    def _repoRemoveInternal(self, arch, name):
+        with self._repo_lock[arch]:
             subprocess.check_call(
                 (self._command_remove,
                  os.path.join(self._repo_dir, arch, self._db_name), name))
+
+    def _repoRemove(self, arch, name):
+        if arch == 'any':
+            for _arch in arches:
+                self._repoRemoveInternal(_arch, name)
+        else:
+            self._repoRemoveInternal(arch, name)
+
+    def _repoAdd(self, arch, pathname):
+        if arch == 'any':
+            for _arch in arches:
+                _target_dir = os.path.join(self._repo_dir, _arch)
+                _target_link = os.path.join(_target_dir,
+                                            os.path.basename(pathname))
+                _link = True
+                if os.path.exists(_target_link):
+                    if os.path.samefile(pathname, _target_link):
+                        _link = False
+                    else:
+                        os.unlink(_target_link)
+                elif os.path.lexists(_target_link):
+                    os.unlink(_target_link)
+                if _link:
+                    os.symlink(os.path.relpath(pathname, _target_dir),
+                               _target_link)
+                self._repoAddInternal(_arch, _target_link)
+        else:
+            self._repoAddInternal(arch, pathname)
+
+    def _unlinkForAny(self, arch, pathname):
+        if arch == 'any':
+            for _arch in arches:
+                _path = os.path.join(self._repo_dir, _arch,
+                                     os.path.basename(pathname))
+                if os.path.islink(_path):
+                    os.unlink(_path)
 
     def _removeLatest(self, cur, name, arch):
         logging.info('Removing %s(%s) from repo, trying to add a lower version',
@@ -155,10 +193,11 @@ class Processor(ProcessEvent):
                 'UPDATE packages SET latest=true '
                  'WHERE id=%s RETURNING file_path', (latest_id,))
             pathname, = cur.fetchone()
-            try:
+            if os.path.exists(pathname):
                 self._repoAdd(arch, pathname)
-            except CalledProcessError:
+            else:
                 logging.warning('detected missing file: ' + pathname)
+                self._unlinkForAny(arch, pathname)
                 self._repoRemove(arch, name)
                 gevent.spawn(self._delete, pathname)
         else:
@@ -190,6 +229,9 @@ class Processor(ProcessEvent):
             self._repoAdd(arch, pathname)
 
     def _complete(self, pathname):
+        if pathname.rstrip('.lck').endswith('.db.tar.gz'):
+            return
+
         if not subprocess.call((self._command_fuser, '-s', pathname),
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE):
             logging.info('Uploading ' + pathname)
@@ -289,12 +331,14 @@ class Processor(ProcessEvent):
                     with self._same_pkg_locks[(name, arch)]:
                         logging.info('Removing file record %s', pathname)
                         cur.execute(
-                            'UPDATE packages SET file_path=%s, '
-                            'enabled=false, '
-                            'latest=false '
-                            'WHERE id=%s', ('', id_,))
+                            'UPDATE packages '
+                               'SET file_path=%s, '
+                                   'enabled=false, '
+                                   'latest=false '
+                             'WHERE id=%s', ('', id_,))
                         if latest:
                             self._removeLatest(cur, name, arch)
+                    self._unlinkForAny(arch, pathname)
 
     def _move(self, src, dest):
         if (src, dest) in self._ignored_move_events:
