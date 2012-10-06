@@ -31,6 +31,7 @@ setup(
              'bin/read_pkginfo.py',
              'bin/archrepo_serve.py',
              'bin/archrepo_sync.py',
+             'bin/archrepo_date_sync.py',
              ],
     package_data={'archrepo': ['templates/*.html', 'templates/static/*']},
     data_files=list(data_files.iteritems()),
