@@ -13,7 +13,9 @@ files = set()
 def _walker(arg, dirname, fnames):
     for name in fnames:
         if name.endswith('.pkg.tar.gz') or name.endswith('.pkg.tar.xz'):
-            files.add(os.path.abspath(os.path.join(dirname, name)))
+            _file = os.path.abspath(os.path.join(dirname, name))
+            if not os.path.islink(_file):
+                files.add(_file)
 os.path.walk(config.get('repository', 'path'), _walker, None)
 
 known = set()

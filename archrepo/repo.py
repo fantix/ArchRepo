@@ -232,6 +232,9 @@ class Processor(ProcessEvent):
         if pathname.rstrip('.lck').endswith('.db.tar.gz'):
             return
 
+        if os.path.islink(pathname):
+            return
+
         if not subprocess.call((self._command_fuser, '-s', pathname),
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE):
             logging.info('Uploading ' + pathname)
